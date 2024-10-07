@@ -5,7 +5,6 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -13,14 +12,10 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../routes";
 
 import {
-  SPEED_UNITS,
   DISTANCE_UNITS,
-  TEMP_UNITS,
   ELEVATION_UNITS,
-  SpeedUnit,
   DistanceUnit,
   ElevationUnit,
-  TempUnit,
 } from "../types/settings";
 import { useSettings } from "../providers/SettingsProvider";
 import { colors } from "../utils/colors";
@@ -102,22 +97,6 @@ const buttonRowStyles = StyleSheet.create({
 export function SettingsScreen({ navigation }: Props) {
   const { settings, setSettings } = useSettings();
 
-  const showStravaInfo = () => {
-    Alert.alert(
-      "Important Information",
-      "Due to Strava's duplicate detection, all activities directly uploaded to Strava after a split or combine have their start time offset by 30 seconds later. You can avoid this by exporting to a file instead.",
-      [{ text: "OK" }],
-    );
-  };
-
-  const showSplitsInfo = () => {
-    Alert.alert(
-      "Important Information",
-      "Multiple splits in one file are not supported yet. To do multiple splits, you have to load the activity again after splitting.",
-      [{ text: "OK" }],
-    );
-  };
-
   return (
     <ScrollView style={styles.container}>
       <ButtonSettingRow
@@ -132,17 +111,6 @@ export function SettingsScreen({ navigation }: Props) {
         ]}
       />
       <ButtonSettingRow
-        label="Speed"
-        selectedValue={settings.speedUnit}
-        onValueChange={(itemValue: SpeedUnit) =>
-          setSettings({ ...settings, speedUnit: itemValue })
-        }
-        items={[
-          { label: "KM per hour", value: SPEED_UNITS.KMH },
-          { label: "MI per hour", value: SPEED_UNITS.MPH },
-        ]}
-      />
-      <ButtonSettingRow
         label="Elevation"
         selectedValue={settings.elevationUnit}
         onValueChange={(itemValue: ElevationUnit) =>
@@ -151,31 +119,6 @@ export function SettingsScreen({ navigation }: Props) {
         items={[
           { label: "Meters", value: ELEVATION_UNITS.M },
           { label: "Feet", value: ELEVATION_UNITS.FT },
-        ]}
-      />
-      <ButtonSettingRow
-        label="Temperature"
-        selectedValue={settings.tempUnit}
-        onValueChange={(itemValue: TempUnit) =>
-          setSettings({ ...settings, tempUnit: itemValue })
-        }
-        items={[
-          { label: "Celsius", value: TEMP_UNITS.C },
-          { label: "Fahrenheit", value: TEMP_UNITS.F },
-        ]}
-      />
-      <ButtonSettingRow
-        label="Other Info"
-        onValueChange={(value) => {
-          if (value === "strava") {
-            showStravaInfo();
-          } else if (value === "splits") {
-            showSplitsInfo();
-          }
-        }}
-        items={[
-          { label: "Strava Uploads", value: "strava" },
-          { label: "Multiple Splits", value: "splits" },
         ]}
       />
     </ScrollView>

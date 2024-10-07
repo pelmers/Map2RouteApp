@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function GpxMapView({ gpx, buttonRow }: Props) {
-  const titleText = `${gpx.name} (${gpx.type})`;
+  const titleText = gpx.name;
 
   return (
     <View style={styles.container}>
@@ -60,7 +60,7 @@ export function GpxMapView({ gpx, buttonRow }: Props) {
         <GpxChartingModule
           gpxFile={gpx}
           chartWidth={Dimensions.get("window").width - 4}
-          chartHeight={200}
+          chartHeight={180}
         />
       </View>
     </View>
@@ -129,6 +129,6 @@ const styles = StyleSheet.create({
     fontFamily: "BebasNeue-Regular",
   },
   chartContainer: {
-    flex: 5.6,
+    flex: 4,
   },
 });

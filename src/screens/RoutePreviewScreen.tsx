@@ -9,6 +9,8 @@ import { RootStackParamList } from "../routes";
 import { GpxFile, parseGpxFile } from "../utils/gpx";
 import { GpxMapView } from "../components/GpxMapView";
 import { ExportButtonRow } from "../components/ExportButtonRow";
+import { ErrorTextComponent } from "src/components/ErrorTextComponent";
+import { pwrap } from "src/utils/constants";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Route Preview">;
 
@@ -16,53 +18,23 @@ export function RoutePreviewScreen({ navigation, route }: Props) {
   const [gpx, setGpx] = useState<GpxFile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { gpxFileUris } = route.params;
+  const { gpxFileUri } = route.params;
   // Read the gpx file on mount
   useEffect(() => {
-    async function readGpxFiles() {
-      const parsedGpxs = await Promise.all(
-        gpxFileUris.map(async (gpxFileUri) => {
-          const fileContents = await FileSystem.readAsStringAsync(gpxFileUri);
-          return parseGpxFile(gpxFileUri, fileContents);
-        }),
-      );
-      parsedGpxs.sort((a, b) => {
-        // If uncomparable, then just return a
-        if (
-          a.points.length === 0 ||
-          b.points.length === 0 ||
-          a.points[0].time == null ||
-          b.points[0].time == null
-        ) {
-          return -1;
-        }
-        // Convert time string to a date object
-        const aTime = new Date(a.points[0].time);
-        const bTime = new Date(b.points[0].time);
-        return aTime.getTime() - bTime.getTime();
-      });
-      const joinedGpx = {
-        name: parsedGpxs[0].name + " (combined)",
-        type: parsedGpxs[0].type,
-        points: parsedGpxs.flatMap((gpx) => gpx.points),
-      };
-
-      setGpx(joinedGpx);
+    async function readGpxFile() {
+      const fileContents = await FileSystem.readAsStringAsync(gpxFileUri);
+      const parsedGpx = parseGpxFile(gpxFileUri, fileContents);
+      setGpx(parsedGpx);
     }
-    readGpxFiles().catch((e) => {
+    pwrap("Error reading gpx file", readGpxFile)().catch((e) => {
       setError((e as Error).message);
     });
-  }, [gpxFileUris]);
+  }, [gpxFileUri]);
 
   if (error) {
     return (
       <View style={styles.container}>
-        <Text style={styles.titleText}>Error!</Text>
-        <Text
-          style={[styles.titleText, { color: "red", paddingHorizontal: 20 }]}
-        >
-          {error}
-        </Text>
+        <ErrorTextComponent errorText={error} />
       </View>
     );
   }

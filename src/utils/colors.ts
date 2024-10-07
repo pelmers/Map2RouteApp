@@ -1,13 +1,10 @@
-// TODO: make new color scheme
-
 export const colors = {
-  // generated from https://acerola.gg/colors.html
-  // I just clicked the button a few times until I liked one of the palettes
-  primary: "#cf61a2",
-  secondary: "#ff73a2",
-  tertiary: "#a052a0",
-  accent: "#523c8f",
-  light: "#ff89a0",
-  dark: "#1e2c6d",
+  // inspired by my pair of adios pro 3 "lucid lemon"
+  primary: "#66b4b0",
+  secondary: "#2f3a7e",
+  tertiary: "#6f7fc7",
+  accent: "#6972aa",
+  light: "#e6fd5c",
+  dark: "#0d0054",
   strava: "#fc4c02",
 };

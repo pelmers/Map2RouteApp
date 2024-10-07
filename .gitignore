@@ -7,8 +7,8 @@ node_modules/
 .expo/
 dist/
 web-build/
-android
-ios
+/android
+/ios
 
 # Native
 *.orig.*
@@ -37,5 +37,6 @@ env*.local
 
 # typescript
 *.tsbuildinfo
+.vscode/exponentIndex.js
 
-gpxsplice-a3318755d8cd.json
+src/googleApiKey.js

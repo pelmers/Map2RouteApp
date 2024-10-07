@@ -1,16 +1,8 @@
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 // Must be less than 10
 const HOTFIX = 0;
 
-const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "env.local") });
-
-// If GOOGLE_MAPS_API_KEY is not set, show a warning
-if (!process.env.GOOGLE_MAPS_API_KEY) {
-  console.warn(
-    "GOOGLE_MAPS_API_KEY is not set. Map tiles will not load on Android. See README.md for more information.",
-  );
-}
+const GOOGLE_MAPS_API_KEY = require("./src/googleApiKey");
 
 const versionParts = VERSION.split(".").map(Number);
 const versionCode =
@@ -44,7 +36,7 @@ module.exports = () => ({
       package: "com.pelmers.map2route",
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_MAPS_API_KEY,
+          apiKey: GOOGLE_MAPS_API_KEY,
         },
       },
       adaptiveIcon: {
@@ -60,18 +52,22 @@ module.exports = () => ({
           fonts: ["assets/fonts/BebasNeue-Regular.ttf"],
         },
       ],
+      [
+        "expo-share-intent",
+        {
+          iosActivationRules: {
+            NSExtensionActivationSupportsWebURLWithMaxCount: 1,
+            NSExtensionActivationSupportsWebPageWithMaxCount: 1,
+          },
+          androidIntentFilters: ["text/*"],
+        },
+      ],
     ],
     owner: "pelmers",
+    extra: {
+      eas: {
+        projectId: "cb36c624-6def-4b69-95a2-5652ae461f63",
+      },
+    },
   },
 });
-
-/**
- *   @react-native-async-storage/async-storage@2.0.0 - expected version: 1.23.1
-  react-native-maps@1.18.0 - expected version: 1.14.0
-  react-native-reanimated@3.15.4 - expected version: ~3.10.1
-  react-native-safe-area-context@4.11.0 - expected version: 4.10.5
-  react-native-screens@3.34.0 - expected version: 3.31.1
-  react-native-svg@15.7.1 - expected version: 15.2.0
-  @types/react@18.3.11 - expected version: ~18.2.79
-  typescript@5.6.2 - expected version: ~5.3.3
- */

@@ -4,8 +4,10 @@ export type RootStackParamList = {
   Info: undefined;
   Combine: undefined;
   "Route Preview": {
-    gpxFileUris: string[];
+    gpxFileUri: string;
   };
-  "Input URL": undefined;
+  "Input URL": {
+    prefilledText?: string;
+  };
   Usage: undefined;
 };

@@ -10,22 +10,14 @@ import {
 import * as Sharing from "expo-sharing";
 
 import { colors } from "../utils/colors";
-import { GpxFile, pointsToGpx } from "../utils/gpx";
+import { GpxFile, pointsToGpx, writeGpxFile } from "../utils/gpx";
 import FileSystem from "../utils/UniversalFileSystem";
+import { pwrap } from "src/utils/constants";
 
 type Props = {
   gpx: GpxFile;
   onError: (error: string) => void;
 };
-
-async function writeFile(file: GpxFile): Promise<string> {
-  const serializedGpxFileString = pointsToGpx(file);
-  const path = `${FileSystem.documentDirectory}${encodeURIComponent(
-    file.name,
-  )}.gpx`;
-  await FileSystem.writeAsStringAsync(path, serializedGpxFileString);
-  return path;
-}
 
 const buttonFontSize = 24;
 
@@ -49,14 +41,13 @@ export function ExportButtonRow(props: Props) {
 
   const handleExportButton = withLoadingState(setLoadingFile, async () => {
     try {
-      const path = await writeFile(gpx);
+      const path = await writeGpxFile(FileSystem.documentDirectory, gpx);
       await Sharing.shareAsync(path, {
         mimeType: "application/gpx+xml",
         dialogTitle: "Share GPX File",
         UTI: "com.topografix.gpx",
       });
     } catch (e) {
-      console.error(e);
       onError((e as Error).message);
     }
   });

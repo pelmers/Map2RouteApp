@@ -18,17 +18,25 @@ type Props = NativeStackScreenProps<RootStackParamList, "Info">;
 
 function getStoreUrl() {
   if (Platform.OS === "ios") {
+    return "https://apps.apple.com/app/map2route/id6738019894";
+  } else {
+    return "https://play.google.com/store/apps/details?id=com.pelmers.map2route";
+  }
+}
+
+function getGpxSpliceUrl() {
+  if (Platform.OS === "ios") {
     return "https://apps.apple.com/app/gpxsplice/id6475313748";
   } else {
     return "https://play.google.com/store/apps/details?id=com.pelmers.gpxsplice";
   }
-  // TODO: add a url for the web version
 }
 
 export function InfoScreen({ navigation }: Props) {
   const appName = Constants.expoConfig?.name || "";
   const appVersion = Constants.expoConfig?.version || "1.0.0";
   const reviewUrl = getStoreUrl();
+  const gpxSpliceUrl = getGpxSpliceUrl();
 
   const issueUrl = "https://github.com/pelmers/Map2RouteApp/issues";
   const sourceUrl = "https://github.com/pelmers/Map2RouteApp";
@@ -81,6 +89,13 @@ export function InfoScreen({ navigation }: Props) {
         onPress={() => Linking.openURL(`mailto:${authorEmail}`)}
       >
         <Text style={styles.link}>✉️ Contact</Text>
+      </TouchableHighlight>
+      <TouchableHighlight
+        style={styles.linkContainer}
+        underlayColor={colors.tertiary}
+        onPress={() => Linking.openURL(gpxSpliceUrl)}
+      >
+        <Text style={styles.link}>⭐️ GPX Splice</Text>
       </TouchableHighlight>
       <Text style={styles.thankYouMessage}>
         Thank you for using {appName}! Your support and feedback help me make

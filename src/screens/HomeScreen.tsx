@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -14,10 +14,36 @@ import { colors } from "../utils/colors";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../routes";
 import { BlurView } from "expo-blur";
+import { useShareIntentContext } from "expo-share-intent";
+import { d } from "src/utils/constants";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 export function HomeScreen({ navigation }: Props) {
+  const {
+    hasShareIntent,
+    shareIntent,
+    error: shareIntentError,
+  } = useShareIntentContext();
+  useEffect(() => {
+    if (hasShareIntent) {
+      const shareValue = shareIntent.text ?? shareIntent.webUrl;
+      if (shareValue !== null) {
+        d(`sending directly to input with ${shareValue}`);
+        navigation.navigate("Input URL", { prefilledText: shareValue });
+      } else {
+        d("could not handle shared intent");
+        navigation.navigate("Input URL", {
+          prefilledText: "could not parse shared data",
+        });
+      }
+    }
+    if (shareIntentError) {
+      navigation.navigate("Input URL", {
+        prefilledText: `sharing error: ${shareIntentError}`,
+      });
+    }
+  }, [hasShareIntent, shareIntent, shareIntentError]);
   return (
     <View style={styles.container}>
       <Video
@@ -44,11 +70,11 @@ export function HomeScreen({ navigation }: Props) {
         <TouchableHighlight
           underlayColor={colors.primary}
           onPress={() => {
-            navigation.navigate("Input URL");
+            navigation.navigate("Input URL", {});
           }}
           style={styles.button}
         >
-          <Text style={styles.buttonText}>Paste Maps Link</Text>
+          <Text style={styles.buttonText}>Paste Google Maps Link</Text>
         </TouchableHighlight>
       </View>
       <View style={styles.buttonBackground}>
@@ -59,13 +85,13 @@ export function HomeScreen({ navigation }: Props) {
           }}
           style={styles.button}
         >
-          <Text style={styles.buttonText}>How to use</Text>
+          <Text style={styles.buttonText}>How to use?</Text>
         </TouchableHighlight>
       </View>
       <Icon
         name="gear"
         size={40}
-        color={colors.primary}
+        color={colors.secondary}
         style={{ position: "absolute", top: 40, right: 40 }}
         onPress={() => {
           navigation.navigate("Settings");
@@ -74,7 +100,7 @@ export function HomeScreen({ navigation }: Props) {
       <Icon
         name="info-circle"
         size={40}
-        color={colors.primary}
+        color={colors.secondary}
         style={{ position: "absolute", top: 40, left: 40 }}
         onPress={() => {
           navigation.navigate("Info");
@@ -92,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bannerVideo: {
-    flex: 3.1,
+    flex: 2.7,
     width: "100%",
     alignSelf: "center",
     resizeMode: "contain",
