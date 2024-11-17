@@ -62,6 +62,16 @@ module.exports = () => ({
           androidIntentFilters: ["text/*"],
         },
       ],
+      [
+        "expo-build-properties",
+        {
+          android: {
+            compileSdkVersion: 34,
+            targetSdkVersion: 34,
+            buildToolsVersion: "34.0.0",
+          },
+        },
+      ],
     ],
     owner: "pelmers",
     extra: {
