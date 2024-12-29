@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../routes";
 import { colors } from "../utils/colors";
+import { Alert } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Info">;
 
@@ -31,6 +32,14 @@ function getGpxSpliceUrl() {
     return "https://play.google.com/store/apps/details?id=com.pelmers.gpxsplice";
   }
 }
+
+const showAccuracyWarning = () => {
+  Alert.alert(
+    "Important Information",
+    "Always check the exported route. In some cases it does not match Google Maps, even though I try my best. For example, Maps might show multiple options. In this case I will probably be using the first one. Also if your place name is very generic, then it is possible the search gives an empty or the wrong result and it goes somewhere else. Double check!!!",
+    [{ text: "OK" }],
+  );
+};
 
 export function InfoScreen({ navigation }: Props) {
   const appName = Constants.expoConfig?.name || "";
@@ -53,6 +62,14 @@ export function InfoScreen({ navigation }: Props) {
       <Text style={styles.title}>
         {appName} v{appVersion}
       </Text>
+      {/* TODO pelmers add a disclaimer that sometimes the exported routes aren't accurate! */}
+      <TouchableHighlight
+        style={styles.linkContainer}
+        underlayColor={colors.tertiary}
+        onPress={() => showAccuracyWarning()}
+      >
+        <Text style={styles.link}>⚠️ Important Note</Text>
+      </TouchableHighlight>
       <TouchableHighlight
         style={styles.linkContainer}
         underlayColor={colors.tertiary}
