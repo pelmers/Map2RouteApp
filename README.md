@@ -24,7 +24,7 @@ This app is written in React Native using the [Expo](https://expo.io/) framework
 - `yarn ios` to run in the iOS simulator
 - `yarn android` to run in the Android emulator
 
-> To show maps on Android, you need a Google Maps API key.
+> To show maps on Android and make directions requests, you need a Google Maps API key.
 > Create a file named `src/googleApiKey.js` with the line `module.exports = 'your_key_here'`.
 
 **Code**:

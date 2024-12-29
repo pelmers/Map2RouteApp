@@ -1,8 +1,6 @@
+import { Video } from "expo-av";
 import React from "react";
-import { Image } from "expo-image";
-import { View, StyleSheet, Text, ScrollView } from "react-native";
-import { Platform } from "react-native";
-import { ResizeMode, Video } from "expo-av";
+import { Platform, ScrollView, StyleSheet, Text } from "react-native";
 
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -13,12 +11,10 @@ type Props = NativeStackScreenProps<RootStackParamList, "Usage">;
 
 export function UsageScreen({ navigation }: Props) {
   let video;
-  // TODO make these videos instead
   if (Platform.OS === "ios") {
     video = require("./resources/ios/map2route_demo.mp4");
   } else {
-    // TODO implement for android
-    video = require("./resources/ios/map2route_demo.mp4");
+    video = require("./resources/android/map2route_demo.mp4");
   }
   return (
     <ScrollView
