@@ -1,6 +1,6 @@
 <div align="center">
  
-![](examples/gpx_splice_split_demo.gif)
+![](examples/demo.gif)
 
 <a href="https://apps.apple.com/app/map2route/id6738019894"><img src="examples/ios-store-button.png" height="50"></a>
 <a href="https://play.google.com/store/apps/details?id=com.pelmers.map2route"><img src="examples/android-store-button.png" height="50"></a>
