@@ -5,7 +5,7 @@
 <a href="https://apps.apple.com/app/map2route/id6738019894"><img src="examples/ios-store-button.png" height="50"></a>
 <a href="https://play.google.com/store/apps/details?id=com.pelmers.map2route"><img src="examples/android-store-button.png" height="50"></a>
 
-# [Maps2Route](blog link here)
+# [Maps2Route](https://pelmers.com/map2route-and-happy-2025/)
 
 </div>
 
