@@ -107,13 +107,16 @@ export function InfoScreen({ navigation }: Props) {
       >
         <Text style={styles.link}>✉️ Contact</Text>
       </TouchableHighlight>
-      <TouchableHighlight
-        style={styles.linkContainer}
-        underlayColor={colors.tertiary}
-        onPress={() => Linking.openURL(gpxSpliceUrl)}
-      >
-        <Text style={styles.link}>⭐️ GPX Splice</Text>
-      </TouchableHighlight>
+      {/* The link below violates Google "Deceptive Ads" policy somehow, whatever I can hide it */}
+      {Platform.OS === "ios" && (
+        <TouchableHighlight
+          style={styles.linkContainer}
+          underlayColor={colors.tertiary}
+          onPress={() => Linking.openURL(gpxSpliceUrl)}
+        >
+          <Text style={styles.link}>⭐️ GPX Splice</Text>
+        </TouchableHighlight>
+      )}
       <Text style={styles.thankYouMessage}>
         Thank you for using {appName}! Your support and feedback help me make
         the app better for everyone.

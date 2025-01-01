@@ -1,6 +1,6 @@
 const VERSION = "1.0.2";
 // Must be less than 10
-const HOTFIX = 0;
+const HOTFIX = 1;
 
 const GOOGLE_MAPS_API_KEY = require("./src/googleApiKey");
 
