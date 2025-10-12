@@ -1,6 +1,6 @@
-const VERSION = "1.0.2";
+const VERSION = "1.0.3";
 // Must be less than 10
-const HOTFIX = 1;
+const HOTFIX = 0;
 
 const GOOGLE_MAPS_API_KEY = require("./src/googleApiKey");
 
@@ -31,6 +31,9 @@ module.exports = () => ({
       supportsTablet: true,
       buildNumber: `${versionCode}`,
       bundleIdentifier: "com.pelmers.map2route",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
       package: "com.pelmers.map2route",

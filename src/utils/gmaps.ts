@@ -68,7 +68,7 @@ function parseGMapsAppUrl(url: URL): ParsedGMapsURL {
   const waypoints = [decodeURIComponent(queryParams.get("saddr")!)];
 
   const daddrValue = queryParams.get("daddr")!;
-  const daddrParts = daddrValue.split(/\+to:/i);
+  const daddrParts = daddrValue.split(/[\+|\s]to:/i);
   for (const part of daddrParts) {
     waypoints.push(decodeURIComponent(part.trim()));
   }
@@ -108,13 +108,31 @@ function withKey(url: string): string {
   return `${url}&key=${googleApiKey}`;
 }
 
+function toApiWaypoint(input: string) {
+  // If it looks like a lat/long then we need to put it in the right format
+  // lat/lng starts with an @ in maps links and will only have only numbers, comma, period, negative sign, ends with z
+  const regex = /(-?\d+\.\d+),(-?\d+\.\d+)/;
+  const match = input.match(regex);
+  if (match) {
+    return {
+      location: {
+        latLng: {
+          latitude: Number.parseFloat(match[1]),
+          longitude: Number.parseFloat(match[2]),
+        },
+      },
+    };
+  } else {
+    return {
+      address: input,
+    };
+  }
+}
+
 // Input: google maps app url or regular google url
 // Output: GpxFile containing all the points
-// e.g.
-// original url: https://maps.app.goo.gl/H5YWrk11Dw3xcUgAA\?g_st\=ia
-// redirect: https://maps.google.com/?geocode=FVugHgMdGatKAA%3D%3D;FYcVHwMdlVJKACk3GvOWZwnGRzHZNxBwTiGTTg%3D%3D;FT4gHwMdn3NKAClrSYrQQgnGRzH7DBmyV3zy5Q%3D%3D;FYkhHwMd8LVKACk90mFNvwnGRzHrlnr9jABqSQ%3D%3D&daddr=Ikaria+Food,+Bilderdijkstraat,+Amsterdam+to:Breadwinner,+Tweede+Laurierdwarsstraat,+Amsterdam+to:Oriental+City+Amsterdam,+Oudezijds+Voorburgwal,+Amsterdam&saddr=52.3387790,4.8934655&dirflg=b&ftid=0x47c609bf4d61d23d:0x496a008cfd7a96eb&lucs=,94231799,94242496,94224825,94227247,94227248,47071704,47069508,94218641,94203019,47084304,94208458,94208447&g_ep=CAISDTYuMTM1LjEuODcwOTAYACC6twsqbCw5NDIzMTc5OSw5NDI0MjQ5Niw5NDIyNDgyNSw5NDIyNzI0Nyw5NDIyNzI0OCw0NzA3MTcwNCw0NzA2OTUwOCw5NDIxODY0MSw5NDIwMzAxOSw0NzA4NDMwNCw5NDIwODQ1OCw5NDIwODQ0N0ICTkw%3D&g_st=ia
-export const gmapsUrlToGpx = pwrap(
-  "Error converting directions to GPX",
+export const gmapsUrlToGpxViaRoutesApi = pwrap(
+  "Error converting directions to GPX with Google API",
   async (inputUrl: URL) => {
     const webUrlBase = "https://www.google.com/maps/dir";
     const finalUrl = await handleGoogleRedirectAndConsent(inputUrl);
@@ -124,35 +142,43 @@ export const gmapsUrlToGpx = pwrap(
       ? parseGMapsWebUrl(finalUrl)
       : parseGMapsAppUrl(finalUrl);
 
-    const start = waypoints[0];
-    const dest = waypoints[waypoints.length - 1];
-    const encodedWaypoints =
-      waypoints.length > 2
-        ? `&waypoints=via:${waypoints
-            .slice(1, waypoints.length - 1)
-            .map(encodeURIComponent)
-            .join("|via:")}`
-        : "";
+    const apiWaypoints = waypoints.map(toApiWaypoint);
+    const origin = apiWaypoints[0];
+    const destination = apiWaypoints[apiWaypoints.length - 1];
+    const intermediates =
+      apiWaypoints.length > 2
+        ? apiWaypoints.slice(1, apiWaypoints.length - 1)
+        : [];
     const urlModeToApiMode = {
-      b: "bicycling",
-      d: "driving",
-      w: "walking",
-      t: "transit",
-      // TODO minor fix the typing here
+      b: "BICYCLE",
+      d: "DRIVE",
+      w: "WALK",
+      t: "TRANSIT",
     } as any;
-    const apiMode = urlModeToApiMode[mode];
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(
-      start,
-    )}&destination=${encodeURIComponent(dest)}${encodedWaypoints}&mode=${apiMode}`;
+    const apiMode = urlModeToApiMode[mode] ?? "DRIVE";
+    const url = "https://routes.googleapis.com/directions/v2:computeRoutes";
+    const body = {
+      origin,
+      destination,
+      intermediates,
+      travelMode: apiMode,
+      polylineEncoding: "ENCODED_POLYLINE",
+      polylineQuality: "HIGH_QUALITY",
+      optimizeWaypointOrder: false,
+    };
 
-    d(
-      `start = ${start}, dest = ${dest}, waypoints = ${encodedWaypoints}, mode = ${mode}`,
-    );
-    d(`sending directions request: ${url}`);
-    const response = await fetch(withKey(url));
+    d(`sending directions request: ${url} with body ${JSON.stringify(body)}`);
+    const response = await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "X-Goog-Api-Key": googleApiKey,
+        "X-Goog-FieldMask": "*",
+      },
+    });
 
     const result = await response.json();
-    d("got result from google maps api", result);
+    d("result from google routes api", result);
     if (response.status !== 200) {
       throw new Error(result.error_message);
     }
@@ -161,19 +187,23 @@ export const gmapsUrlToGpx = pwrap(
     if (!route) {
       throw new Error(`No route found, Google Maps status: ${result.status}`);
     }
-    const name = (route.summary ?? `${start} => ${dest}`) + ` ${apiMode}`;
+    const name =
+      (route.description ?? `${origin} => ${destination}`) + ` ${apiMode}`;
     let km = 0.0;
     let points: LatLng[] = [];
     for (const leg of route.legs) {
-      for (const step of leg.steps) {
-        points = points.concat(
-          decode(step.polyline.points).map(([lat, lng]) => ({ lat, lng })),
-        );
-        km += step.distance.value / 1000;
-      }
+      points = points.concat(
+        decode(leg.polyline.encodedPolyline).map(([lat, lng]) => ({
+          lat,
+          lng,
+        })),
+      );
+      km += leg.distanceMeters / 1000;
     }
+    d(`Parsed ${points.length} points from routes api response`);
     const gpxPoints = [];
     const defaultElevations = Array(points.length).fill(0);
+    // TODO pelmers if there's some error in elevations then show it in the chart somehow
     let elevations = await pswallow(
       defaultElevations,
       elevationsForPoints,
@@ -201,10 +231,11 @@ export const elevationsForPoints = pwrap(
   "Error getting elevations",
   async (points: LatLng[]): Promise<number[]> => {
     // Google API limits elevation requests to 512 points maximum.
-    // But in practice I think there's some kind of request size limit too, so I pick 400 here
-    const resampledPoints = resamplePoints(points, 400);
+    // But there must also be a request length limit that is easy to reach if you don't cap the precision of the floats
+    const resampledPoints = resamplePoints(points, 512);
+    // 5 decimal points gives precision down to the meter
     const encodedLocations = resampledPoints
-      .map((point) => `${point.lat},${point.lng}`)
+      .map((point) => `${point.lat.toFixed(5)},${point.lng.toFixed(5)}`)
       .join("|");
     const url = `https://maps.googleapis.com/maps/api/elevation/json?locations=${encodeURIComponent(encodedLocations)}`;
     d(`encodedLocations length: ${encodedLocations.length}`);
@@ -212,7 +243,12 @@ export const elevationsForPoints = pwrap(
     const response = await fetch(withKey(url));
 
     const text = await response.text();
-    const result = JSON.parse(text);
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (err) {
+      throw new Error(`failed to parse JSON: ${text}`);
+    }
     if (response.status !== 200) {
       throw new Error(result.error_message);
     }

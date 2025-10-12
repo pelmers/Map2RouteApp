@@ -13,16 +13,14 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../routes";
 import { colors } from "../utils/colors";
-import { gmapsUrlToGpx, parseUrlFromText } from "../utils/gmaps";
-import { pointsToGpx, writeGpxFile } from "src/utils/gpx";
+import { gmapsUrlToGpxViaRoutesApi, parseUrlFromText } from "../utils/gmaps";
+import { writeGpxFile } from "src/utils/gpx";
 import FileSystem from "../utils/UniversalFileSystem";
 import { d, getErrorMessage } from "src/utils/constants";
 import { ErrorTextComponent } from "src/components/ErrorTextComponent";
 import { TouchableWithoutFeedback } from "react-native";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Input URL">;
-
-const str = JSON.stringify;
 
 export function InputURLScreen({ navigation, route }: Props) {
   const { prefilledText } = route.params;
@@ -41,7 +39,7 @@ export function InputURLScreen({ navigation, route }: Props) {
         throw new Error("No url in the given text");
       }
       // TODO: handle also other mapping apps?
-      const gmapsResult = await gmapsUrlToGpx(url);
+      const gmapsResult = await gmapsUrlToGpxViaRoutesApi(url);
       const uri = await writeGpxFile(
         FileSystem.cacheDirectory,
         gmapsResult.gpx,
