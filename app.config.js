@@ -1,6 +1,6 @@
 const VERSION = "1.0.3";
 // Must be less than 10
-const HOTFIX = 0;
+const HOTFIX = 1;
 
 const GOOGLE_MAPS_API_KEY = require("./src/googleApiKey");
 
@@ -72,6 +72,9 @@ module.exports = () => ({
             compileSdkVersion: 34,
             targetSdkVersion: 34,
             buildToolsVersion: "34.0.0",
+          },
+          ios: {
+            deploymentTarget: "18.0",
           },
         },
       ],
